@@ -1,0 +1,40 @@
+version: '3'
+services:
+  ############################
+  # Go serving app + Dapr sidecar
+  ############################
+  serving:
+    container_name: dapr_actor_dockercompose_sample_goserving
+    build: ./serving
+    ports:
+      - "50002:50002"
+    networks:
+      - hello-dapr
+  serving-dapr:
+    image: "daprio/daprd:edge"
+    container_name: dapr_actor_dockercompose_sample_goserving-sidecar
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "serving",
+        "--app-protocol",
+        "http",
+        "--app-port",
+        "8080",
+        "--dapr-http-port",
+        "3500",
+        "--placement-host-address",
+        "placement:50006",
+        --log-level,
+        "debug",
+        --components-path,
+        "./components",
+      ]
+    volumes:
+      - "./components/:/components"
+    depends_on:
+      - serving
+    network_mode: "service:serving"
+networks:
+  hello-dapr:

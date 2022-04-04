@@ -1,0 +1,32 @@
+version: '3'
+services:
+  ############################
+  # Go client app + Dapr sidecar
+  ############################
+  client:
+    container_name: dapr_actor_dockercompose_sample_goclient
+    build: ./client
+    networks:
+      - hello-dapr
+  client-dapr:
+    image: "daprio/daprd:edge"
+    container_name: dapr_actor_dockercompose_sample_goclient-sidecar
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "client",
+        "--placement-host-address",
+        "placement:50006",
+        "--log-level",
+        "debug",
+        "--components-path",
+        "./components"
+      ]
+    volumes:
+      - "./components/:/components"
+    depends_on:
+      - client
+    network_mode: "service:client"
+networks:
+  hello-dapr:
